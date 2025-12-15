@@ -29,7 +29,7 @@
                         sans: ['Cairo', 'sans-serif'],
                     },
                     animation: {
-                        'ticker': 'ticker 60s linear infinite', // تم تعديل السرعة إلى 60 ثانية (أبطأ)
+                        'ticker': 'ticker 60s linear infinite', 
                         'fade-in': 'fadeIn 0.5s ease-out forwards',
                     },
                     keyframes: {
@@ -310,6 +310,7 @@
                             <tr>
                                 <th class="p-3">#</th>
                                 <th class="p-3 text-right">الفريق</th>
+                                <th class="p-3">الشعار</th> <!-- تمت إضافة عمود للشعار -->
                                 <th class="p-3 bg-gray-200 font-black">نقاط</th>
                                 <th class="p-3">لعب</th>
                                 <th class="p-3">فاز</th>
@@ -624,9 +625,11 @@
                         <td class="p-3">
                             <span class="${rankBg} w-6 h-6 flex items-center justify-center rounded-full font-bold text-xs mx-auto">${index + 1}</span>
                         </td>
-                        <td class="p-3 text-right flex items-center gap-2">
-                             ${logoHtml}
+                        <td class="p-3 text-right">
                              <span class="font-bold text-gray-800">${team.name}</span>
+                        </td>
+                        <td class="p-3 flex items-center justify-center">
+                             ${logoHtml}
                         </td>
                         <td class="p-3 bg-white/50 text-kl-black font-black text-lg border-l border-r border-gray-100">${team.points}</td>
                         <td class="p-3">${team.played}</td>
@@ -866,4 +869,4 @@
 
     </script>
 </body>
-</html>
+    </html>
