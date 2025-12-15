@@ -85,7 +85,6 @@
             <form onsubmit="handleLogin(event)" class="space-y-4">
                 <div>
                     <label class="block text-sm font-bold mb-1">اسم المستخدم</label>
-                    <!-- تم تعديل placeholder هنا لإخفاء اسم المستخدم -->
                     <input type="text" id="username" class="w-full border p-2 rounded focus:outline-none focus:border-kl-green" placeholder="أدخل اسم المستخدم">
                 </div>
                 <div>
@@ -672,7 +671,9 @@
             const p = document.getElementById('password').value;
             if(u === 'kooralaghouat' && p === 'kooradz2015') {
                 isAdmin = true;
-                document.getElementById('login-modal').classList.add('modal-hidden');
+                const modal = document.getElementById('login-modal');
+                modal.classList.add('modal-hidden');
+                modal.classList.remove('modal-visible');
                 document.getElementById('admin-panel').classList.remove('section-hidden');
                 initAdminForms();
                 document.getElementById('username').value = '';
@@ -865,4 +866,4 @@
 
     </script>
 </body>
-                        </html>
+</html>
