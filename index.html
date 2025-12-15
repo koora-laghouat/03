@@ -180,9 +180,19 @@
                     </div>
                 </div>
 
-                <div class="mb-4">
-                    <label class="block text-sm font-bold mb-1">اسم القسم الحالي:</label>
-                    <input type="text" id="current-league-name" onchange="updateLeagueName(this.value)" class="w-full border p-2 rounded font-bold">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div>
+                        <label class="block text-sm font-bold mb-1">اسم القسم:</label>
+                        <input type="text" id="current-league-name" onchange="updateLeagueMeta('title', this.value)" class="w-full border p-2 rounded font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold mb-1">الموسم الرياضي:</label>
+                        <input type="text" id="current-league-season" onchange="updateLeagueMeta('season', this.value)" class="w-full border p-2 rounded font-bold" placeholder="مثال: 2025/2026">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold mb-1">الجولة الحالية:</label>
+                        <input type="text" id="current-league-round" onchange="updateLeagueMeta('round', this.value)" class="w-full border p-2 rounded font-bold" placeholder="مثال: الجولة 12">
+                    </div>
                 </div>
 
                 <div class="overflow-x-auto">
@@ -299,9 +309,12 @@
             </div>
 
             <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200">
-                <div class="bg-kl-green p-4 text-white flex justify-between items-center">
+                <div class="bg-kl-green p-4 text-white flex flex-col md:flex-row justify-between items-center gap-2">
                     <h3 id="public-league-title" class="text-xl font-bold"></h3>
-                    <span class="text-sm bg-white/20 px-2 py-1 rounded">موسم 2024/2025</span>
+                    <div class="flex gap-2 items-center">
+                         <span class="text-sm bg-white/20 px-3 py-1 rounded font-bold" id="public-league-season"></span>
+                         <span class="text-sm bg-yellow-500 text-black px-3 py-1 rounded font-bold" id="public-league-round"></span>
+                    </div>
                 </div>
                 
                 <div class="overflow-x-auto">
@@ -398,6 +411,8 @@
                 {
                     id: 1,
                     title: "القسم الوطني الثالث - الجنوب الشرقي",
+                    season: "2024/2025",
+                    round: "الجولة 12",
                     teams: [
                         { name: "إتحاد النزلة", logo: "", played: 12, won: 10, draw: 2, lost: 0, gf: 24, ga: 7, diff: 17, points: 32 },
                         { name: "نادي تقرت", logo: "", played: 12, won: 10, draw: 2, lost: 0, gf: 18, ga: 5, diff: 13, points: 32 },
@@ -420,36 +435,50 @@
                 {
                     id: 2,
                     title: "القسم الجهوي الاول - أ - ورقلة",
+                    season: "2024/2025",
+                    round: "الجولة 1",
                     teams: createTeams(16)
                 },
                 {
                     id: 3,
                     title: "القسم الجهوي الثاني - ب - ورقلة",
+                    season: "2024/2025",
+                    round: "الجولة 1",
                     teams: createTeams(16)
                 },
                 {
                     id: 4,
                     title: "القسم الجهوي الثاني - ج - ورقلة",
+                    season: "2024/2025",
+                    round: "الجولة 1",
                     teams: createTeams(16)
                 },
                 {
                     id: 5,
                     title: "القسم الشرفي - أ - الأغواط",
+                    season: "2024/2025",
+                    round: "الجولة 1",
                     teams: createTeams(9)
                 },
                 {
                     id: 6,
                     title: "القسم الشرفي - ب - الأغواط",
+                    season: "2024/2025",
+                    round: "الجولة 1",
                     teams: createTeams(10)
                 },
                 {
                     id: 7,
                     title: "القسم الولائي أ",
+                    season: "2024/2025",
+                    round: "الجولة 1",
                     teams: createTeams(6)
                 },
                 {
                     id: 8,
                     title: "القسم الولائي ب",
+                    season: "2024/2025",
+                    round: "الجولة 1",
                     teams: createTeams(6)
                 }
             ]
@@ -459,10 +488,18 @@
         let appData = JSON.parse(localStorage.getItem('koora_laghouat_data')) || defaultData;
         
         // ** MIGRATION LOGIC **
+        // Update old data to include season and round if missing
+        if (appData.leagues && appData.leagues.length > 0 && typeof appData.leagues[0].season === 'undefined') {
+             appData.leagues.forEach(league => {
+                 league.season = "2024/2025";
+                 league.round = "الجولة 1";
+             });
+             localStorage.setItem('koora_laghouat_data', JSON.stringify(appData));
+        }
+        
         // If the user has old data structure (fewer leagues), we merge/update
         if (!appData.leagues || appData.leagues.length < 8) {
              // Reset to default to ensure all new leagues appear properly
-             // We keep slider/news if possible, but structure update is priority
              const oldNews = appData.news || defaultData.news;
              const oldSlider = appData.slider || defaultData.slider;
              const oldTicker = appData.ticker || defaultData.ticker;
@@ -597,6 +634,9 @@
             if (appData.leagues.length > 0) {
                 const currentLeague = appData.leagues[activeLeagueIndex];
                 document.getElementById('public-league-title').innerText = currentLeague.title;
+                document.getElementById('public-league-season').innerText = currentLeague.season || "2024/2025";
+                document.getElementById('public-league-round').innerText = currentLeague.round || "الجولة --";
+
                 const tbody = document.getElementById('standings-body');
                 
                 // Sort teams by points (Descending)
@@ -758,6 +798,9 @@
 
             const league = appData.leagues[leagueIdx];
             document.getElementById('current-league-name').value = league.title;
+            // Update Season and Round Inputs
+            document.getElementById('current-league-season').value = league.season || "2024/2025";
+            document.getElementById('current-league-round').value = league.round || "الجولة 1";
 
             const tbody = document.getElementById('teams-editor-body');
             tbody.innerHTML = league.teams.map((t, index) => `
@@ -801,12 +844,25 @@
             }
         }
 
+        function updateLeagueMeta(key, val) {
+            const leagueIdx = document.getElementById('admin-league-selector').value;
+            if (appData.leagues[leagueIdx]) {
+                appData.leagues[leagueIdx][key] = val;
+                // If it's title, update dropdown as well
+                if(key === 'title') {
+                    document.getElementById('admin-league-selector').options[leagueIdx].text = val;
+                }
+            }
+        }
+
         function createNewLeague() {
             const name = prompt("أدخل اسم القسم الجديد (مثال: القسم الشرفي - فوج أ):");
             if(name) {
                 appData.leagues.push({
                     id: Date.now(),
                     title: name,
+                    season: "2024/2025",
+                    round: "الجولة 1",
                     teams: []
                 });
                 initAdminForms(); // Refresh selector
