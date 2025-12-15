@@ -239,16 +239,16 @@
             </div>
             <button id="mobile-menu-btn" class="lg:hidden text-2xl focus:outline-none hover:text-kl-light-green"><i class="fas fa-bars"></i></button>
             <nav class="hidden lg:flex space-x-6 space-x-reverse text-sm font-semibold">
-                <a href="#" onclick="showSection('home')" class="nav-link hover:text-kl-light-green transition pb-1 active-link" id="nav-home">الرئيسية</a>
-                <a href="#" onclick="showSection('news')" class="nav-link hover:text-kl-light-green transition pb-1" id="nav-news">الأخبار</a>
-                <a href="#" onclick="showSection('standings')" class="nav-link hover:text-kl-light-green transition pb-1" id="nav-standings">ترتيب الفرق</a>
-                <a href="#" onclick="showSection('contact')" class="nav-link hover:text-kl-light-green transition pb-1" id="nav-contact">اتصل بنا</a>
+                <a href="#home" onclick="event.preventDefault(); showSection('home')" class="nav-link hover:text-kl-light-green transition pb-1 active-link" id="nav-home">الرئيسية</a>
+                <a href="#news" onclick="event.preventDefault(); showSection('news')" class="nav-link hover:text-kl-light-green transition pb-1" id="nav-news">الأخبار</a>
+                <a href="#standings" onclick="event.preventDefault(); showSection('standings')" class="nav-link hover:text-kl-light-green transition pb-1" id="nav-standings">ترتيب الفرق</a>
+                <a href="#contact" onclick="event.preventDefault(); showSection('contact')" class="nav-link hover:text-kl-light-green transition pb-1" id="nav-contact">اتصل بنا</a>
             </nav>
         </div>
         <div id="mobile-menu" class="hidden lg:hidden bg-gray-900 border-t border-gray-700 p-4 space-y-3">
-            <a href="#" onclick="showSection('home')" class="block hover:text-kl-light-green">الرئيسية</a>
-            <a href="#" onclick="showSection('news')" class="block hover:text-kl-light-green">الأخبار</a>
-            <a href="#" onclick="showSection('standings')" class="block hover:text-kl-light-green">ترتيب الفرق</a>
+            <a href="#home" onclick="event.preventDefault(); showSection('home')" class="block hover:text-kl-light-green">الرئيسية</a>
+            <a href="#news" onclick="event.preventDefault(); showSection('news')" class="block hover:text-kl-light-green">الأخبار</a>
+            <a href="#standings" onclick="event.preventDefault(); showSection('standings')" class="block hover:text-kl-light-green">ترتيب الفرق</a>
         </div>
     </header>
 
@@ -878,17 +878,6 @@
                 appData.leagues[leagueIdx].title = val;
                 // Update dropdown text without re-rendering everything
                 document.getElementById('admin-league-selector').options[leagueIdx].text = val;
-            }
-        }
-
-        function updateLeagueMeta(key, val) {
-            const leagueIdx = document.getElementById('admin-league-selector').value;
-            if (appData.leagues[leagueIdx]) {
-                appData.leagues[leagueIdx][key] = val;
-                // If it's title, update dropdown as well
-                if(key === 'title') {
-                    document.getElementById('admin-league-selector').options[leagueIdx].text = val;
-                }
             }
         }
 
