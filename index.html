@@ -5,10 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>الكرة في الأغواط | KOORA LAGHOUAT</title>
     
+    <!-- استدعاء Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- استدعاء خط Cairo -->
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    
+    <!-- استدعاء أيقونات FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+    <!-- إعدادات Tailwind -->
     <script>
         tailwind.config = {
             theme: {
@@ -23,7 +29,7 @@
                         sans: ['Cairo', 'sans-serif'],
                     },
                     animation: {
-                        'ticker': 'ticker 30s linear infinite',
+                        'ticker': 'ticker 30s linear infinite', 
                         'fade-in': 'fadeIn 0.5s ease-out forwards',
                     },
                     keyframes: {
@@ -43,242 +49,301 @@
 
     <style>
         body { background-color: #f9f9f9; }
-        .section-hidden { display: none !important; } /* Force hide */
+        .section-hidden { display: none; }
         .active-link { color: #32CD32 !important; font-weight: bold; border-bottom: 2px solid #32CD32; }
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #f1f1f1; }
         ::-webkit-scrollbar-thumb { background: #006400; border-radius: 4px; }
         .hover-zoom img { transition: transform 0.5s ease; }
         .hover-zoom:hover img { transform: scale(1.1); }
+        
+        .modal { transition: opacity 0.3s ease; }
+        .modal-hidden { opacity: 0; pointer-events: none; }
+        .modal-visible { opacity: 1; pointer-events: auto; }
+        
+        /* League Selector Styling */
+        .league-btn-active { 
+            background-color: #006400; 
+            color: white; 
+            border-color: #006400; 
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .league-btn-inactive { 
+            background-color: white; 
+            color: #1a1a1a; 
+            border-color: #e5e7eb; 
+        }
     </style>
 </head>
 <body class="font-sans text-gray-800">
 
-    <!-- Login Modal (Added 'hidden' class by default) -->
-    <div id="login-modal" class="hidden fixed inset-0 bg-black/90 z-[300] flex items-center justify-center backdrop-blur-sm">
-        <div class="bg-white rounded-xl p-8 max-w-sm w-full shadow-2xl relative animate-fade-in border-t-4 border-kl-green">
-            <button onclick="closeLoginModal()" class="absolute top-4 left-4 text-gray-500 hover:text-red-500 text-xl"><i class="fas fa-times"></i></button>
-            <h2 class="text-2xl font-black text-center mb-6 text-kl-green">منطقة المشرفين</h2>
+    <!-- Login Modal -->
+    <div id="login-modal" class="fixed inset-0 bg-black/80 z-[100] flex items-center justify-center modal modal-hidden">
+        <div class="bg-white rounded-xl p-8 max-w-sm w-full shadow-2xl relative">
+            <button onclick="toggleLoginModal()" class="absolute top-4 left-4 text-gray-500 hover:text-red-500"><i class="fas fa-times"></i></button>
+            <h2 class="text-2xl font-black text-center mb-6 text-kl-green">دخول المشرف</h2>
             <form onsubmit="handleLogin(event)" class="space-y-4">
                 <div>
                     <label class="block text-sm font-bold mb-1">اسم المستخدم</label>
-                    <input type="text" id="username" class="w-full border-2 border-gray-200 p-3 rounded-lg focus:outline-none focus:border-kl-green transition" placeholder="kooralaghouat">
+                    <input type="text" id="username" class="w-full border p-2 rounded focus:outline-none focus:border-kl-green" placeholder="kooralaghouat">
                 </div>
                 <div>
                     <label class="block text-sm font-bold mb-1">كلمة المرور</label>
-                    <input type="password" id="password" class="w-full border-2 border-gray-200 p-3 rounded-lg focus:outline-none focus:border-kl-green transition" placeholder="********">
+                    <input type="password" id="password" class="w-full border p-2 rounded focus:outline-none focus:border-kl-green" placeholder="********">
                 </div>
-                <button type="submit" class="w-full bg-kl-green text-white font-bold py-3 rounded-lg hover:bg-kl-black transition shadow-lg">تسجيل الدخول</button>
+                <button type="submit" class="w-full bg-kl-green text-white font-bold py-2 rounded hover:bg-kl-black transition">دخول</button>
             </form>
         </div>
     </div>
 
     <!-- Admin Floating Button -->
-    <button onclick="openLoginModal()" class="fixed bottom-6 left-6 z-50 bg-gray-800 text-white p-4 rounded-full shadow-lg hover:bg-kl-green transition hover:scale-110 border-2 border-white" title="لوحة التحكم">
+    <button onclick="toggleLoginModal()" class="fixed bottom-6 left-6 z-50 bg-gray-800 text-white p-4 rounded-full shadow-lg hover:bg-kl-green transition hover:scale-110" title="لوحة التحكم">
         <i class="fas fa-cogs text-xl"></i>
     </button>
 
-    <!-- Admin Dashboard (Z-Index increased to 200) -->
-    <div id="admin-panel" class="section-hidden fixed inset-0 bg-gray-100 z-[200] overflow-y-auto">
-        <div class="container mx-auto p-4 md:p-8">
-            <div class="flex justify-between items-center mb-8 bg-white p-4 rounded-xl shadow-sm">
-                <h1 class="text-2xl md:text-3xl font-black text-kl-black flex items-center gap-2">
-                    <i class="fas fa-sliders-h text-kl-green"></i> لوحة التحكم
-                </h1>
-                <div class="flex gap-2">
-                    <button onclick="saveChanges()" class="bg-kl-green text-white px-4 py-2 rounded-lg font-bold hover:bg-green-700 shadow flex items-center gap-2 text-sm md:text-base">
-                        <i class="fas fa-save"></i> حفظ
-                    </button>
-                    <button onclick="closeAdminPanel()" class="bg-red-500 text-white px-4 py-2 rounded-lg font-bold hover:bg-red-600 shadow flex items-center gap-2 text-sm md:text-base">
-                        <i class="fas fa-sign-out-alt"></i> خروج
-                    </button>
+    <!-- Admin Dashboard -->
+    <div id="admin-panel" class="section-hidden fixed inset-0 bg-gray-100 z-[90] overflow-y-auto">
+        <div class="container mx-auto p-6">
+            <div class="flex justify-between items-center mb-8">
+                <h1 class="text-3xl font-black text-kl-black">⚙️ لوحة التحكم</h1>
+                <div class="space-x-4 space-x-reverse">
+                    <button onclick="saveChanges()" class="bg-green-600 text-white px-6 py-2 rounded font-bold hover:bg-green-700 shadow-lg"><i class="fas fa-save"></i> حفظ التغييرات</button>
+                    <button onclick="closeAdminPanel()" class="bg-red-500 text-white px-6 py-2 rounded font-bold hover:bg-red-600 shadow-lg">خروج</button>
                 </div>
             </div>
 
-            <!-- Tabs Navigation -->
-            <div class="flex space-x-2 space-x-reverse mb-6 overflow-x-auto pb-2">
-                <button onclick="switchAdminTab('general', this)" class="admin-tab-btn active-tab bg-kl-green text-white px-6 py-2 rounded-full shadow font-bold transition whitespace-nowrap">عام</button>
-                <button onclick="switchAdminTab('ticker', this)" class="admin-tab-btn bg-white text-gray-700 px-6 py-2 rounded-full shadow font-bold hover:text-kl-green transition whitespace-nowrap">الشريط</button>
-                <button onclick="switchAdminTab('slider', this)" class="admin-tab-btn bg-white text-gray-700 px-6 py-2 rounded-full shadow font-bold hover:text-kl-green transition whitespace-nowrap">السلايدر</button>
-                <button onclick="switchAdminTab('news', this)" class="admin-tab-btn bg-white text-gray-700 px-6 py-2 rounded-full shadow font-bold hover:text-kl-green transition whitespace-nowrap">الأخبار</button>
-                <button onclick="switchAdminTab('teams', this)" class="admin-tab-btn bg-white text-gray-700 px-6 py-2 rounded-full shadow font-bold hover:text-kl-green transition whitespace-nowrap">الترتيب</button>
+            <!-- Admin Tabs -->
+            <div class="flex space-x-2 space-x-reverse mb-6 overflow-x-auto">
+                <button onclick="switchAdminTab('general')" class="admin-tab-btn bg-white px-4 py-2 rounded shadow font-bold hover:text-kl-green">عام & الشعار</button>
+                <button onclick="switchAdminTab('ticker')" class="admin-tab-btn bg-white px-4 py-2 rounded shadow font-bold hover:text-kl-green">شريط الأخبار</button>
+                <button onclick="switchAdminTab('slider')" class="admin-tab-btn bg-white px-4 py-2 rounded shadow font-bold hover:text-kl-green">السلايدر</button>
+                <button onclick="switchAdminTab('news')" class="admin-tab-btn bg-white px-4 py-2 rounded shadow font-bold hover:text-kl-green">الأخبار</button>
+                <button onclick="switchAdminTab('teams')" class="admin-tab-btn bg-white px-4 py-2 rounded shadow font-bold hover:text-kl-green">الترتيب والفرق</button>
             </div>
 
-            <!-- Tab: General -->
-            <div id="tab-general" class="admin-tab-content bg-white p-6 rounded-xl shadow-md border border-gray-100">
-                <h3 class="text-xl font-bold mb-6 border-b pb-2">إعدادات الهوية</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Tab Contents -->
+            <div id="tab-general" class="admin-tab-content bg-white p-6 rounded shadow-md">
+                <h3 class="text-xl font-bold mb-4">إعدادات الموقع العامة</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm font-bold mb-2 text-gray-600">اسم الموقع (الجزء الأول)</label>
-                        <input type="text" id="edit-site-name-1" class="w-full border-2 border-gray-100 p-3 rounded-lg focus:border-kl-green outline-none">
+                        <label class="block text-sm font-bold mb-1">اسم الموقع 1</label>
+                        <input type="text" id="edit-site-name-1" class="w-full border p-2 rounded">
                     </div>
                     <div>
-                        <label class="block text-sm font-bold mb-2 text-gray-600">اسم الموقع (الجزء الملون)</label>
-                        <input type="text" id="edit-site-name-2" class="w-full border-2 border-gray-100 p-3 rounded-lg focus:border-kl-green outline-none">
+                        <label class="block text-sm font-bold mb-1">اسم الموقع 2</label>
+                        <input type="text" id="edit-site-name-2" class="w-full border p-2 rounded">
                     </div>
-                    <div class="md:col-span-2">
-                        <label class="block text-sm font-bold mb-2 text-gray-600">وصف الشعار (Slogan)</label>
-                        <input type="text" id="edit-site-desc" class="w-full border-2 border-gray-100 p-3 rounded-lg focus:border-kl-green outline-none">
+                    <div>
+                        <label class="block text-sm font-bold mb-1">وصف الشعار (النص)</label>
+                        <input type="text" id="edit-site-desc" class="w-full border p-2 rounded">
+                    </div>
+                     <div>
+                        <label class="block text-sm font-bold mb-1 text-kl-green">رابط صورة شعار الموقع (Logo URL)</label>
+                        <input type="text" id="edit-site-logo" placeholder="https://..." class="w-full border-2 border-kl-green p-2 rounded bg-green-50">
+                        <p class="text-xs text-gray-500 mt-1">اتركه فارغاً لاستخدام الأيقونة الافتراضية</p>
+                    </div>
+                     <div>
+                        <label class="block text-sm font-bold mb-1">صورة الخلفية</label>
+                        <input type="text" id="edit-bg-image" class="w-full border p-2 rounded">
                     </div>
                 </div>
             </div>
 
-            <!-- Tab: Ticker -->
-            <div id="tab-ticker" class="admin-tab-content hidden bg-white p-6 rounded-xl shadow-md border border-gray-100">
-                <h3 class="text-xl font-bold mb-6 border-b pb-2">شريط الأخبار العاجلة</h3>
-                <p class="text-sm text-gray-500 mb-2"><i class="fas fa-info-circle"></i> اكتب كل خبر في سطر جديد</p>
-                <textarea id="edit-ticker-text" rows="8" class="w-full border-2 border-gray-100 p-3 rounded-lg focus:border-kl-green outline-none font-medium" placeholder="خبر 1&#10;خبر 2"></textarea>
+            <div id="tab-ticker" class="admin-tab-content hidden bg-white p-6 rounded shadow-md">
+                <h3 class="text-xl font-bold mb-4">شريط الأخبار العاجلة</h3>
+                <textarea id="edit-ticker-text" rows="6" class="w-full border p-2 rounded focus:border-kl-green"></textarea>
             </div>
 
-            <!-- Tab: Slider -->
-            <div id="tab-slider" class="admin-tab-content hidden bg-white p-6 rounded-xl shadow-md border border-gray-100">
-                <div class="flex justify-between items-center mb-6 border-b pb-2">
-                    <h3 class="text-xl font-bold">الصور المتحركة (Slider)</h3>
-                    <button onclick="addNewSlideInput()" class="bg-kl-black text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-800 font-bold"><i class="fas fa-plus"></i> إضافة شريحة</button>
-                </div>
+            <div id="tab-slider" class="admin-tab-content hidden bg-white p-6 rounded shadow-md">
+                <h3 class="text-xl font-bold mb-4">الصور المتحركة</h3>
                 <div id="slider-editor-container" class="space-y-4"></div>
+                <button onclick="addNewSlideInput()" class="mt-4 bg-gray-200 px-4 py-2 rounded hover:bg-gray-300 font-bold">+ إضافة شريحة</button>
             </div>
 
-            <!-- Tab: News -->
-            <div id="tab-news" class="admin-tab-content hidden bg-white p-6 rounded-xl shadow-md border border-gray-100">
-                <div class="flex justify-between items-center mb-6 border-b pb-2">
-                    <h3 class="text-xl font-bold">إدارة الأخبار</h3>
-                    <button onclick="addNewNewsInput()" class="bg-kl-black text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-800 font-bold"><i class="fas fa-plus"></i> خبر جديد</button>
-                </div>
-                <div id="news-editor-container" class="grid grid-cols-1 gap-6"></div>
+            <div id="tab-news" class="admin-tab-content hidden bg-white p-6 rounded shadow-md">
+                <h3 class="text-xl font-bold mb-4">إدارة الأخبار</h3>
+                <div id="news-editor-container" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                <button onclick="addNewNewsInput()" class="mt-4 bg-gray-200 px-4 py-2 rounded hover:bg-gray-300 font-bold w-full">+ إضافة خبر جديد</button>
             </div>
 
-            <!-- Tab: Teams -->
-            <div id="tab-teams" class="admin-tab-content hidden bg-white p-6 rounded-xl shadow-md border border-gray-100">
-                <div class="flex justify-between items-center mb-6 border-b pb-2">
-                    <h3 class="text-xl font-bold">جدول الترتيب</h3>
-                    <button onclick="addNewTeamRow()" class="bg-kl-black text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-800 font-bold"><i class="fas fa-plus"></i> فريق جديد</button>
+            <div id="tab-teams" class="admin-tab-content hidden bg-white p-6 rounded shadow-md">
+                <div class="flex justify-between items-center mb-6 bg-gray-50 p-4 rounded border">
+                    <div class="w-full md:w-1/2">
+                        <label class="block text-sm font-bold mb-1 text-gray-600">اختر القسم للتعديل:</label>
+                        <select id="admin-league-selector" onchange="renderTeamsEditor()" class="w-full border-2 border-kl-green p-2 rounded font-bold text-gray-800">
+                            <!-- JS Filled -->
+                        </select>
+                    </div>
+                    <div class="space-x-2 space-x-reverse hidden">
+                         <!-- Hidden for safety, can be re-enabled if needed to add dynamic leagues -->
+                        <button onclick="createNewLeague()" class="bg-blue-600 text-white px-3 py-2 rounded text-sm hover:bg-blue-700"><i class="fas fa-plus"></i></button>
+                    </div>
                 </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-bold mb-1">اسم القسم الحالي:</label>
+                    <input type="text" id="current-league-name" onchange="updateLeagueName(this.value)" class="w-full border p-2 rounded font-bold">
+                </div>
+
                 <div class="overflow-x-auto">
-                    <table class="w-full text-center border-collapse">
-                        <thead class="bg-gray-100 text-gray-600 text-sm">
+                    <table class="w-full text-center border text-xs">
+                        <thead class="bg-gray-100">
                             <tr>
-                                <th class="p-3">#</th>
-                                <th class="p-3 w-1/3">الفريق</th>
-                                <th class="p-3">لعب</th>
-                                <th class="p-3">نقاط</th>
-                                <th class="p-3">اللون</th>
-                                <th class="p-3">حذف</th>
+                                <th class="p-1">#</th>
+                                <th class="p-1 w-16">الشعار</th> <!-- New Logo Column -->
+                                <th class="p-1 min-w-[150px]">الفريق</th>
+                                <th class="p-1">ل</th>
+                                <th class="p-1">ف</th>
+                                <th class="p-1">ت</th>
+                                <th class="p-1">خ</th>
+                                <th class="p-1">+</th>
+                                <th class="p-1">-</th>
+                                <th class="p-1">+/-</th>
+                                <th class="p-1">ن</th>
+                                <th class="p-1">حذف</th>
                             </tr>
                         </thead>
-                        <tbody id="teams-editor-body"></tbody>
+                        <tbody id="teams-editor-body">
+                            <!-- JS Generated -->
+                        </tbody>
                     </table>
+                    <button onclick="addNewTeamRow()" class="mt-4 bg-gray-200 px-4 py-2 rounded hover:bg-gray-300 font-bold w-full">+ إضافة فريق للقسم الحالي</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Website Header -->
+    <!-- Header -->
     <header class="bg-kl-black text-white shadow-lg sticky top-0 z-40">
         <div class="container mx-auto px-4 py-3 flex justify-between items-center">
             <div class="flex items-center space-x-3 space-x-reverse cursor-pointer" onclick="showSection('home')">
-                <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center text-kl-green font-bold text-xl border-2 border-kl-green shadow-[0_0_10px_rgba(50,205,50,0.5)]">
-                    <i class="fas fa-futbol"></i>
+                <div id="header-logo-container" class="w-12 h-12 flex items-center justify-center">
+                    <!-- JS will populate this with Img or Icon -->
                 </div>
                 <div>
                     <h1 class="text-2xl font-black tracking-tighter uppercase leading-none" id="display-site-title">
                         KOORA <span class="text-kl-light-green">LAGHOUAT</span>
                     </h1>
-                    <span class="text-xs text-gray-400 block tracking-wide" id="display-site-desc">نبض الكرة الأغواطية</span>
+                    <span class="text-xs text-gray-400 block" id="display-site-desc">نبض الكرة الأغواطية</span>
                 </div>
             </div>
-            <button id="mobile-menu-btn" class="lg:hidden text-2xl focus:outline-none hover:text-kl-light-green transition"><i class="fas fa-bars"></i></button>
+            <button id="mobile-menu-btn" class="lg:hidden text-2xl focus:outline-none hover:text-kl-light-green"><i class="fas fa-bars"></i></button>
             <nav class="hidden lg:flex space-x-6 space-x-reverse text-sm font-semibold">
                 <a href="#" onclick="showSection('home')" class="nav-link hover:text-kl-light-green transition pb-1 active-link" id="nav-home">الرئيسية</a>
                 <a href="#" onclick="showSection('news')" class="nav-link hover:text-kl-light-green transition pb-1" id="nav-news">الأخبار</a>
-                <a href="#" onclick="showSection('standings')" class="nav-link hover:text-kl-light-green transition pb-1" id="nav-standings">الترتيب</a>
+                <a href="#" onclick="showSection('standings')" class="nav-link hover:text-kl-light-green transition pb-1" id="nav-standings">ترتيب الفرق</a>
                 <a href="#" onclick="showSection('contact')" class="nav-link hover:text-kl-light-green transition pb-1" id="nav-contact">اتصل بنا</a>
             </nav>
         </div>
-        <div id="mobile-menu" class="hidden lg:hidden bg-gray-900 border-t border-gray-800 p-4 space-y-3 shadow-inner">
-            <a href="#" onclick="showSection('home')" class="block hover:text-kl-light-green p-2 rounded hover:bg-gray-800">الرئيسية</a>
-            <a href="#" onclick="showSection('news')" class="block hover:text-kl-light-green p-2 rounded hover:bg-gray-800">الأخبار</a>
-            <a href="#" onclick="showSection('standings')" class="block hover:text-kl-light-green p-2 rounded hover:bg-gray-800">الترتيب</a>
+        <div id="mobile-menu" class="hidden lg:hidden bg-gray-900 border-t border-gray-700 p-4 space-y-3">
+            <a href="#" onclick="showSection('home')" class="block hover:text-kl-light-green">الرئيسية</a>
+            <a href="#" onclick="showSection('news')" class="block hover:text-kl-light-green">الأخبار</a>
+            <a href="#" onclick="showSection('standings')" class="block hover:text-kl-light-green">ترتيب الفرق</a>
         </div>
     </header>
 
-    <!-- News Ticker -->
-    <div class="bg-kl-green text-white text-sm py-2 relative overflow-hidden flex items-center shadow-inner border-b border-green-800">
-        <div class="bg-kl-green z-10 px-4 font-bold whitespace-nowrap shadow-[4px_0_10px_rgba(0,0,0,0.3)] absolute right-0 h-full flex items-center">
-            <span class="bg-red-600 px-2 py-0.5 rounded text-xs ml-2 animate-pulse shadow-sm">شريط الأخبار</span>
+    <!-- Ticker -->
+    <div class="bg-kl-green text-white text-sm py-2 relative overflow-hidden flex items-center shadow-inner">
+        <div class="bg-kl-green z-10 px-3 font-bold whitespace-nowrap shadow-md absolute right-0 h-full flex items-center border-l border-green-800">
+            <span class="animate-pulse bg-red-600 px-2 rounded text-xs ml-2">شريط الأخبار</span>
         </div>
         <div class="overflow-hidden w-full h-6 relative">
-            <div class="absolute top-0 right-0 whitespace-nowrap animate-[ticker_35s_linear_infinite]" id="news-ticker-content" style="text-align: right;"></div>
+            <div class="absolute top-0 right-0 whitespace-nowrap animate-[ticker_30s_linear_infinite]" id="news-ticker-content" style="text-align: right;"></div>
         </div>
     </div>
 
     <!-- Main Content -->
     <main class="container mx-auto px-4 py-8 min-h-screen" id="main-content">
 
-        <!-- HOME SECTION -->
+        <!-- HOME -->
         <section id="home" class="space-y-12 section-block animate-fade-in">
             <!-- Slider -->
-            <div class="relative w-full h-64 md:h-[500px] rounded-2xl overflow-hidden shadow-2xl group border border-gray-200">
-                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent z-10"></div>
-                <img id="slider-img" src="" class="w-full h-full object-cover transition-transform duration-[2000ms] ease-in-out hover:scale-105" alt="Slider">
-                <div class="absolute bottom-0 right-0 z-20 text-white w-full p-6 md:p-10">
-                    <span class="bg-kl-green px-3 py-1 rounded text-xs md:text-sm font-bold mb-3 inline-block shadow">حدث رئيسي</span>
-                    <h2 id="slider-title" class="text-2xl md:text-4xl font-black leading-tight mb-2 drop-shadow-md max-w-4xl"></h2>
+            <div class="relative w-full h-96 md:h-[500px] rounded-2xl overflow-hidden shadow-2xl group">
+                <div class="absolute inset-0 bg-black/40 z-10"></div>
+                <img id="slider-img" src="" class="w-full h-full object-cover transition-opacity duration-700" alt="Slider">
+                <div class="absolute bottom-10 right-10 z-20 text-white max-w-2xl">
+                    <span class="bg-kl-green px-3 py-1 rounded text-sm font-bold mb-2 inline-block">مميز</span>
+                    <h2 id="slider-title" class="text-3xl md:text-5xl font-black leading-tight mb-4 drop-shadow-lg"></h2>
                 </div>
-                <!-- Controls -->
-                <div class="absolute bottom-6 left-6 z-20 flex space-x-3 space-x-reverse">
-                    <button onclick="changeSlide(1)" class="w-10 h-10 md:w-12 md:h-12 bg-white/20 hover:bg-kl-green border border-white/30 rounded-full text-white flex items-center justify-center backdrop-blur-md transition transform active:scale-90"><i class="fas fa-arrow-right"></i></button>
-                    <button onclick="changeSlide(-1)" class="w-10 h-10 md:w-12 md:h-12 bg-white/20 hover:bg-kl-green border border-white/30 rounded-full text-white flex items-center justify-center backdrop-blur-md transition transform active:scale-90"><i class="fas fa-arrow-left"></i></button>
+                <div class="absolute bottom-10 left-10 z-20 flex space-x-2 space-x-reverse">
+                    <button onclick="changeSlide(1)" class="w-10 h-10 bg-white/20 hover:bg-kl-green rounded-full text-white flex items-center justify-center backdrop-blur-sm transition"><i class="fas fa-chevron-right"></i></button>
+                    <button onclick="changeSlide(-1)" class="w-10 h-10 bg-white/20 hover:bg-kl-green rounded-full text-white flex items-center justify-center backdrop-blur-sm transition"><i class="fas fa-chevron-left"></i></button>
                 </div>
             </div>
 
-            <!-- Featured News Grid -->
+            <!-- Featured News -->
             <div>
                  <div class="flex justify-between items-end mb-6 border-r-4 border-kl-green pr-4">
-                    <h3 class="text-2xl font-bold text-gray-800">آخر المستجدات</h3>
-                    <button onclick="showSection('news')" class="text-kl-green hover:underline text-sm font-bold flex items-center gap-1">عرض الأرشيف <i class="fas fa-arrow-left"></i></button>
+                    <h3 class="text-2xl font-bold">آخر المستجدات</h3>
+                    <button onclick="showSection('news')" class="text-kl-green hover:underline text-sm font-bold">عرض الكل</button>
                 </div>
                 <div id="featured-news-grid" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
             </div>
         </section>
 
-        <!-- NEWS SECTION -->
+        <!-- NEWS PAGE -->
         <section id="news" class="section-block section-hidden animate-fade-in">
-            <h2 class="text-3xl font-black text-kl-green mb-8 text-center border-b-2 border-gray-100 pb-4">أرشيف الأخبار</h2>
+            <h2 class="text-3xl font-black text-kl-green mb-8 text-center">أرشيف الأخبار</h2>
             <div id="all-news-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"></div>
         </section>
 
-        <!-- STANDINGS SECTION -->
+        <!-- STANDINGS PAGE -->
         <section id="standings" class="section-block section-hidden animate-fade-in">
-            <h2 class="text-3xl font-black text-center mb-8 border-b-2 border-gray-100 pb-4">جدول الترتيب العام</h2>
-            <div class="overflow-x-auto bg-white rounded-xl shadow-lg border border-gray-100">
-                <table class="w-full text-center whitespace-nowrap">
-                    <thead class="bg-kl-black text-white">
-                        <tr>
-                            <th class="p-4">#</th>
-                            <th class="p-4 text-right">الفريق</th>
-                            <th class="p-4">لعب</th>
-                            <th class="p-4 bg-green-900">نقاط</th>
-                        </tr>
-                    </thead>
-                    <tbody id="standings-body" class="text-gray-700 font-bold"></tbody>
-                </table>
+            <h2 class="text-3xl font-black text-center mb-6">جداول الترتيب</h2>
+            
+            <!-- League Selector (Public) -->
+            <div class="mb-8">
+                <div id="public-league-selector" class="flex flex-wrap gap-3 justify-center">
+                    <!-- JS Generated Buttons -->
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200">
+                <div class="bg-kl-green p-4 text-white flex justify-between items-center">
+                    <h3 id="public-league-title" class="text-xl font-bold"></h3>
+                    <span class="text-sm bg-white/20 px-2 py-1 rounded">موسم 2024/2025</span>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full text-center whitespace-nowrap">
+                        <thead class="bg-gray-100 text-gray-700 text-sm border-b-2 border-kl-green">
+                            <tr>
+                                <th class="p-3">#</th>
+                                <th class="p-3 text-right">الفريق</th>
+                                <th class="p-3 bg-gray-200 font-black">نقاط</th>
+                                <th class="p-3">لعب</th>
+                                <th class="p-3">فاز</th>
+                                <th class="p-3">تعادل</th>
+                                <th class="p-3">خسر</th>
+                                <th class="p-3 text-green-600 font-bold">له</th>
+                                <th class="p-3 text-red-600 font-bold">عليه</th>
+                                <th class="p-3">+/-</th>
+                            </tr>
+                        </thead>
+                        <tbody id="standings-body" class="text-gray-700 font-semibold text-sm">
+                            <!-- JS Rendered -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="mt-4 flex gap-4 text-xs font-bold text-gray-500 justify-center">
+                <div class="flex items-center"><span class="w-3 h-3 bg-green-100 border border-green-500 ml-2"></span> صعود / متصدر</div>
+                <div class="flex items-center"><span class="w-3 h-3 bg-red-100 border border-red-500 ml-2"></span> سقوط / مؤخرة</div>
             </div>
         </section>
 
-        <!-- CONTACT SECTION -->
+        <!-- CONTACT PAGE -->
         <section id="contact" class="section-block section-hidden animate-fade-in">
-             <div class="max-w-2xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
+             <div class="max-w-2xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
                 <div class="bg-kl-black p-6 text-white text-center">
                     <h2 class="text-3xl font-bold mb-2">اتصل بنا</h2>
-                    <p class="text-gray-400">للاستفسارات والإعلانات</p>
                 </div>
                 <div class="p-8">
-                     <form onsubmit="event.preventDefault(); alert('تم إرسال رسالتك، شكراً لتواصلك معنا.');" class="space-y-4">
-                        <input type="text" class="w-full border-2 border-gray-100 rounded-lg p-3 focus:border-kl-green outline-none transition" placeholder="الاسم الكامل" required>
-                        <input type="email" class="w-full border-2 border-gray-100 rounded-lg p-3 focus:border-kl-green outline-none transition" placeholder="البريد الإلكتروني" required>
-                        <textarea class="w-full border-2 border-gray-100 rounded-lg p-3 h-32 focus:border-kl-green outline-none transition" placeholder="اكتب رسالتك هنا..." required></textarea>
-                        <button class="w-full bg-kl-green text-white py-3 rounded-lg font-bold hover:bg-kl-black transition shadow-lg">إرسال الرسالة</button>
+                     <form onsubmit="event.preventDefault(); alert('تم الإرسال');" class="space-y-4">
+                        <input type="text" class="w-full border rounded p-2" placeholder="الاسم" required>
+                        <textarea class="w-full border rounded p-2 h-32" placeholder="الرسالة" required></textarea>
+                        <button class="w-full bg-kl-green text-white py-3 rounded font-bold">إرسال</button>
                     </form>
                 </div>
             </div>
@@ -287,71 +352,184 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-kl-black text-white py-8 border-t-4 border-kl-green text-center mt-12">
-        <div class="container mx-auto">
-            <p class="font-bold text-lg mb-2">KOORA <span class="text-kl-light-green">LAGHOUAT</span></p>
-            <p class="text-gray-500 text-sm">&copy; 2025 جميع الحقوق محفوظة</p>
-        </div>
+    <footer class="bg-kl-black text-white pt-10 pb-6 border-t-4 border-kl-green text-center">
+        <p>&copy; 2025 الكرة في الأغواط | KOORA LAGHOUAT</p>
     </footer>
 
-    <!-- JavaScript Logic -->
+    <!-- Logic -->
     <script>
-        // --- DATA INITIALIZATION ---
+        // --- 1. DEFAULT DATA ---
+        // Helper function to create empty teams
+        function createTeams(count) {
+            return Array.from({length: count}, (_, i) => ({
+                name: `فريق ${i + 1}`,
+                logo: "", // New Field
+                played: 0, won: 0, draw: 0, lost: 0, gf: 0, ga: 0, diff: 0, points: 0
+            }));
+        }
+
         const defaultData = {
-            config: { siteName1: "KOORA", siteName2: "LAGHOUAT", desc: "نبض الكرة الأغواطية" },
+            config: {
+                siteName1: "KOORA",
+                siteName2: "LAGHOUAT",
+                desc: "نبض الكرة الأغواطية",
+                logo: "", // New Field for Site Logo
+                bgImage: "" 
+            },
             ticker: [
-                "تأهل الأكاديمية الرياضية للأغواط للدور الـ 16 من كأس الجمهورية بركلات الترجيح 🏆",
-                "تعزية: الأسرة الرياضية تودع الصحفي القدير عبد الحفيظ شايب",
-                "وفاة المناصر الوفي لاتحاد الأغواط عبد المؤمن محمد - إنا لله وإنا إليه راجعون",
-                "عملية جراحية ناجحة للاعب صهيب نجام والعودة قريباً للملاعب"
+                "🔴 اتحاد الأغواط يحقق فوزاً ثميناً خارج الديار",
+                "⚽ انطلاق التسجيلات للفئات الشبانية في مدرسة الكرة",
+                "📢 تأجيل مباراة الديربي بسبب سوء الأحوال الجوية",
+                "🏆 تتويج أصاغر الشباب بالبطولة الولائية"
             ],
             slider: [
-                { title: "تأهل الأكاديمية الرياضية للأغواط للدور 16 من كأس الجمهورية", img: "https://images.unsplash.com/photo-1517466787929-bc90951d0974?q=80&w=1200" },
-                { title: "عملية جراحية ناجحة للاعب صهيب نجام - بالشفاء العاجل", img: "https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a?q=80&w=1200" },
-                { title: "وداعاً عبد الحفيظ شايب - أيقونة التعليق الرياضي", img: "https://images.unsplash.com/photo-1504711434969-e33886168f5c?q=80&w=1200" },
-                { title: "تعزية في وفاة المناصر عبد المؤمن محمد", img: "https://images.unsplash.com/photo-1595152772835-219674b2a8a6?q=80&w=1200" }
+                { img: "https://images.unsplash.com/photo-1517466787929-bc90951d0974?q=80&w=1200", title: "تأهل الأكاديمية الرياضية للأغواط للدور 16" },
+                { img: "https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a?q=80&w=1200", title: "عملية جراحية ناجحة للاعب صهيب نجام" },
+                { img: "https://images.unsplash.com/photo-1504711434969-e33886168f5c?q=80&w=1200", title: "تعزية: الصحفي عبد الحفيظ شايب في ذمة الله" },
+                { img: "https://images.unsplash.com/photo-1595152772835-219674b2a8a6?q=80&w=1200", title: "تعزية: وفاة المناصر عبد المؤمن محمد" }
             ],
             news: [
-                { title: "فوز مستحق للأكاديمية", cat: "كأس", date: "منذ 7 ساعات", img: "https://images.unsplash.com/photo-1517466787929-bc90951d0974?q=80&w=600" },
-                { title: "العملية الجراحية لصهيب", cat: "إصابات", date: "منذ يوم", img: "https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a?q=80&w=600" },
-                { title: "جنازة مهيبة للفقيد", cat: "مجتمع", date: "منذ يومين", img: "https://images.unsplash.com/photo-1504711434969-e33886168f5c?q=80&w=600" }
+                { title: "تصريحات نارية للمدرب", cat: "أكابر", date: "14 ديسمبر", img: "https://images.unsplash.com/photo-1517466787929-bc90951d0974?q=80&w=600" },
+                { title: "المواهب الشابة تتألق", cat: "شبان", date: "13 ديسمبر", img: "https://images.unsplash.com/photo-1522778119026-d647f0565c6d?q=80&w=600" }
             ],
-            teams: [
-                { name: "اتحاد الأغواط", played: 12, points: 28, color: "green" },
-                { name: "شباب الأغواط", played: 12, points: 25, color: "blue" },
-                { name: "مولودية حاسي الرمل", played: 12, points: 22, color: "red" },
-                { name: "اتحاد آفلو", played: 12, points: 19, color: "yellow" }
+            // Updated Leagues Structure with requested divisions
+            leagues: [
+                {
+                    id: 1,
+                    title: "القسم الوطني الثالث - الجنوب الشرقي",
+                    teams: [
+                        { name: "إتحاد النزلة", logo: "", played: 12, won: 10, draw: 2, lost: 0, gf: 24, ga: 7, diff: 17, points: 32 },
+                        { name: "نادي تقرت", logo: "", played: 12, won: 10, draw: 2, lost: 0, gf: 18, ga: 5, diff: 13, points: 32 },
+                        { name: "أ متيلي الشعانبة", logo: "", played: 12, won: 8, draw: 1, lost: 3, gf: 17, ga: 5, diff: 12, points: 25 },
+                        { name: "اتحاد الخنق", logo: "", played: 12, won: 8, draw: 1, lost: 3, gf: 17, ga: 6, diff: 11, points: 25 },
+                        { name: "إتحاد الزاوية", logo: "", played: 12, won: 6, draw: 3, lost: 3, gf: 19, ga: 14, diff: 5, points: 20 },
+                        { name: "اتحاد افلو", logo: "", played: 12, won: 5, draw: 4, lost: 3, gf: 18, ga: 12, diff: 6, points: 19 },
+                        { name: "إتحاد همايسة", logo: "", played: 12, won: 6, draw: 1, lost: 5, gf: 15, ga: 10, diff: 5, points: 19 },
+                        { name: "مشعل حاسي مسعود", logo: "", played: 12, won: 5, draw: 4, lost: 3, gf: 12, ga: 12, diff: 0, points: 19 },
+                        { name: "شباب جامعة", logo: "", played: 12, won: 4, draw: 2, lost: 6, gf: 12, ga: 13, diff: -1, points: 14 },
+                        { name: "رائد قلتةس سعد", logo: "", played: 12, won: 4, draw: 1, lost: 7, gf: 18, ga: 15, diff: 3, points: 13 },
+                        { name: "اولمبي الواد", logo: "", played: 12, won: 3, draw: 5, lost: 4, gf: 12, ga: 14, diff: -2, points: 13 },
+                        { name: "أولمبيك المقرن", logo: "", played: 12, won: 3, draw: 4, lost: 5, gf: 10, ga: 12, diff: -2, points: 13 },
+                        { name: "نجوم اليزي", logo: "", played: 12, won: 3, draw: 2, lost: 7, gf: 9, ga: 15, diff: -6, points: 11 },
+                        { name: "إتحاد حاسي الرمل", logo: "", played: 12, won: 2, draw: 2, lost: 8, gf: 5, ga: 15, diff: -10, points: 8 },
+                        { name: "اتحاد سوف", logo: "", played: 12, won: 1, draw: 1, lost: 10, gf: 7, ga: 30, diff: -23, points: 0 },
+                        { name: "اتحاد ورقلة", logo: "", played: 12, won: 0, draw: 1, lost: 11, gf: 6, ga: 34, diff: -28, points: -5 }
+                    ]
+                },
+                {
+                    id: 2,
+                    title: "القسم الجهوي الاول - أ - ورقلة",
+                    teams: createTeams(16)
+                },
+                {
+                    id: 3,
+                    title: "القسم الجهوي الثاني - ب - ورقلة",
+                    teams: createTeams(16)
+                },
+                {
+                    id: 4,
+                    title: "القسم الجهوي الثاني - ج - ورقلة",
+                    teams: createTeams(16)
+                },
+                {
+                    id: 5,
+                    title: "القسم الشرفي - أ - الأغواط",
+                    teams: createTeams(9)
+                },
+                {
+                    id: 6,
+                    title: "القسم الشرفي - ب - الأغواط",
+                    teams: createTeams(10)
+                },
+                {
+                    id: 7,
+                    title: "القسم الولائي أ",
+                    teams: createTeams(6)
+                },
+                {
+                    id: 8,
+                    title: "القسم الولائي ب",
+                    teams: createTeams(6)
+                }
             ]
         };
 
+        // --- 2. STATE MANAGEMENT ---
         let appData = JSON.parse(localStorage.getItem('koora_laghouat_data')) || defaultData;
-        let isAdmin = false;
+        
+        // ** MIGRATION LOGIC **
+        // If the user has old data structure (fewer leagues), we merge/update
+        if (!appData.leagues || appData.leagues.length < 8) {
+             // Reset to default to ensure all new leagues appear properly
+             // We keep slider/news if possible, but structure update is priority
+             const oldNews = appData.news || defaultData.news;
+             const oldSlider = appData.slider || defaultData.slider;
+             const oldTicker = appData.ticker || defaultData.ticker;
+             const oldConfig = appData.config || defaultData.config;
+             
+             // Keep the first league (National 3) data if it exists
+             let firstLeague = defaultData.leagues[0];
+             if(appData.leagues && appData.leagues.length > 0) {
+                 firstLeague = appData.leagues[0];
+             }
 
-        // Ensure update of slider data if it matches old default
-        if(appData.slider.length > 0 && appData.slider[0].title.includes("الديربي الكبير")) {
-            appData.slider = defaultData.slider;
-            appData.ticker = defaultData.ticker;
-            appData.news = defaultData.news;
-            localStorage.setItem('koora_laghouat_data', JSON.stringify(appData));
+             appData = JSON.parse(JSON.stringify(defaultData)); // Deep copy default
+             appData.news = oldNews;
+             appData.slider = oldSlider;
+             appData.ticker = oldTicker;
+             appData.config = oldConfig;
+             appData.leagues[0] = firstLeague; // Restore first league data
+
+             localStorage.setItem('koora_laghouat_data', JSON.stringify(appData));
         }
 
-        // --- CORE FUNCTIONS ---
+        let isAdmin = false;
+        let activeLeagueIndex = 0; // For public view
+
+        function saveData() {
+            localStorage.setItem('koora_laghouat_data', JSON.stringify(appData));
+            renderAll();
+        }
+
+        // --- 3. RENDERING FUNCTIONS ---
         function renderAll() {
             renderConfig();
             renderTicker();
             renderSlider();
             renderNews();
             renderStandings();
+            
+            // Only re-render admin if panel is open
+            if(!document.getElementById('admin-panel').classList.contains('section-hidden')) {
+                 initAdminForms(); // Refresh dropdowns
+            }
         }
 
         function renderConfig() {
             document.getElementById('display-site-title').innerHTML = `${appData.config.siteName1} <span class="text-kl-light-green">${appData.config.siteName2}</span>`;
             document.getElementById('display-site-desc').innerText = appData.config.desc;
+            
+            // Handle Site Logo
+            const logoContainer = document.getElementById('header-logo-container');
+            if (appData.config.logo && appData.config.logo.trim() !== "") {
+                logoContainer.innerHTML = `<img src="${appData.config.logo}" alt="Logo" class="w-full h-full object-contain">`;
+            } else {
+                logoContainer.innerHTML = `
+                    <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center text-kl-green font-bold text-xl border-2 border-kl-green">
+                        <i class="fas fa-futbol"></i>
+                    </div>`;
+            }
+
+            if(appData.config.bgImage) {
+                document.body.style.backgroundImage = `url('${appData.config.bgImage}')`;
+                document.body.style.backgroundSize = "cover";
+                document.body.style.backgroundAttachment = "fixed";
+            }
         }
 
         function renderTicker() {
-            const container = document.getElementById('news-ticker-content');
-            container.innerHTML = appData.ticker.map(item => `<span class="mx-12 inline-block text-lg"><i class="fas fa-dot-circle text-xs ml-2 text-kl-light-green"></i>${item}</span>`).join('');
+            const tickerContainer = document.getElementById('news-ticker-content');
+            tickerContainer.innerHTML = appData.ticker.map(item => `<span class="mx-8 inline-block">${item}</span>`).join('');
         }
 
         let currentSlide = 0;
@@ -367,83 +545,139 @@
         function updateSlideView() {
             const img = document.getElementById('slider-img');
             const title = document.getElementById('slider-title');
-            
             if (currentSlide >= appData.slider.length) currentSlide = 0;
             if (currentSlide < 0) currentSlide = appData.slider.length - 1;
-
-            const slide = appData.slider[currentSlide];
-            img.src = slide.img;
-            title.innerText = slide.title;
+            img.style.opacity = 0;
+            setTimeout(() => {
+                img.src = appData.slider[currentSlide].img;
+                title.innerText = appData.slider[currentSlide].title;
+                img.style.opacity = 1;
+            }, 300);
         }
 
-        function changeSlide(dir) {
-            currentSlide += dir;
+        function changeSlide(direction) {
+            currentSlide += direction;
             updateSlideView();
         }
 
         function renderNews() {
-            const createCard = (n) => `
-                <div class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition duration-300 border border-gray-100 group flex flex-col h-full">
+            const featuredContainer = document.getElementById('featured-news-grid');
+            featuredContainer.innerHTML = appData.news.slice(0, 3).map(news => createNewsCard(news)).join('');
+            const allNewsContainer = document.getElementById('all-news-grid');
+            allNewsContainer.innerHTML = appData.news.map(news => createNewsCard(news)).join('');
+        }
+
+        function createNewsCard(news) {
+            return `
+                <div class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition duration-300 border border-gray-100 group">
                     <div class="h-48 overflow-hidden hover-zoom relative">
-                        <img src="${n.img}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/600x400?text=No+Image'">
-                        <span class="absolute top-2 right-2 bg-kl-green/90 backdrop-blur-sm text-white text-xs font-bold px-3 py-1 rounded-full shadow">${n.cat}</span>
+                        <img src="${news.img}" class="w-full h-full object-cover" alt="${news.title}" onerror="this.src='https://placehold.co/600x400?text=No+Image'">
+                        <span class="absolute top-2 right-2 bg-kl-green text-white text-xs px-2 py-1 rounded shadow">${news.cat}</span>
                     </div>
-                    <div class="p-4 flex flex-col flex-grow">
-                        <div class="text-xs text-gray-400 mb-2 flex items-center gap-1"><i class="far fa-clock"></i> ${n.date}</div>
-                        <h4 class="font-bold text-lg mb-2 text-gray-800 leading-snug group-hover:text-kl-green transition line-clamp-2">${n.title}</h4>
-                        <button class="mt-auto text-sm text-kl-green font-bold self-start hover:underline">قراءة المزيد</button>
+                    <div class="p-4">
+                        <div class="text-xs text-gray-400 mb-2"><i class="far fa-calendar-alt ml-1"></i> ${news.date}</div>
+                        <h4 class="font-bold text-lg mb-2 group-hover:text-kl-green transition">${news.title}</h4>
                     </div>
                 </div>
             `;
-            
-            document.getElementById('featured-news-grid').innerHTML = appData.news.slice(0, 3).map(createCard).join('');
-            document.getElementById('all-news-grid').innerHTML = appData.news.map(createCard).join('');
         }
 
         function renderStandings() {
-            document.getElementById('standings-body').innerHTML = appData.teams.map((t, i) => `
-                <tr class="border-b hover:bg-gray-50 transition">
-                    <td class="p-4">${i + 1}</td>
-                    <td class="p-4 text-right flex items-center font-bold text-gray-800">
-                        <span class="w-3 h-3 bg-${t.color}-500 rounded-full ml-3 shadow-sm"></span> ${t.name}
-                    </td>
-                    <td class="p-4 text-gray-600">${t.played}</td>
-                    <td class="p-4"><span class="bg-green-100 text-kl-green px-3 py-1 rounded-lg font-black">${t.points}</span></td>
-                </tr>
+            // Render Tab Buttons
+            const btnContainer = document.getElementById('public-league-selector');
+            btnContainer.innerHTML = appData.leagues.map((league, idx) => `
+                <button onclick="switchLeagueView(${idx})" 
+                    class="px-4 py-2 rounded-lg border transition font-bold text-sm text-center flex-grow md:flex-grow-0 ${idx === activeLeagueIndex ? 'league-btn-active transform scale-105' : 'league-btn-inactive hover:bg-gray-50'}">
+                    ${league.title}
+                </button>
             `).join('');
-        }
 
-        // --- ADMIN SYSTEM ---
-        function openLoginModal() {
-            if(isAdmin) {
-                document.getElementById('admin-panel').classList.remove('section-hidden');
+            // Render Active Table
+            if (appData.leagues.length > 0) {
+                const currentLeague = appData.leagues[activeLeagueIndex];
+                document.getElementById('public-league-title').innerText = currentLeague.title;
+                const tbody = document.getElementById('standings-body');
+                
+                // Sort teams by points (Descending)
+                const sortedTeams = [...currentLeague.teams].sort((a, b) => b.points - a.points);
+
+                tbody.innerHTML = sortedTeams.map((team, index) => {
+                    // Logic for row highlighting (Example: 1st place green, last 2 red)
+                    let rowClass = "border-b hover:bg-gray-50 transition";
+                    let rankBg = "bg-gray-100";
+                    
+                    if (index === 0) {
+                        rowClass = "border-b bg-green-50 hover:bg-green-100";
+                        rankBg = "bg-green-200 text-kl-green";
+                    } else if (index >= sortedTeams.length - 2) {
+                        rowClass = "border-b bg-red-50 hover:bg-red-100";
+                        rankBg = "bg-red-200 text-red-700";
+                    }
+
+                    // Logo HTML
+                    const logoHtml = team.logo && team.logo.trim() !== "" 
+                        ? `<img src="${team.logo}" class="w-8 h-8 object-contain mx-auto">`
+                        : `<div class="w-8 h-8 bg-gray-200 rounded-full mx-auto flex items-center justify-center text-gray-400 text-xs"><i class="fas fa-shield-alt"></i></div>`;
+
+                    return `
+                    <tr class="${rowClass}">
+                        <td class="p-3">
+                            <span class="${rankBg} w-6 h-6 flex items-center justify-center rounded-full font-bold text-xs mx-auto">${index + 1}</span>
+                        </td>
+                        <td class="p-3 text-right flex items-center gap-2">
+                             ${logoHtml}
+                             <span class="font-bold text-gray-800">${team.name}</span>
+                        </td>
+                        <td class="p-3 bg-white/50 text-kl-black font-black text-lg border-l border-r border-gray-100">${team.points}</td>
+                        <td class="p-3">${team.played}</td>
+                        <td class="p-3">${team.won}</td>
+                        <td class="p-3">${team.draw}</td>
+                        <td class="p-3">${team.lost}</td>
+                        <td class="p-3 text-green-600 font-bold">${team.gf}</td>
+                        <td class="p-3 text-red-600 font-bold">${team.ga}</td>
+                        <td class="p-3 font-bold dir-ltr">${team.diff > 0 ? '+' + team.diff : team.diff}</td>
+                    </tr>
+                `}).join('');
             } else {
-                document.getElementById('login-modal').classList.remove('hidden');
+                document.getElementById('standings-body').innerHTML = '<tr><td colspan="10" class="p-4 text-center">لا توجد جداول ترتيب حالياً</td></tr>';
             }
         }
 
-        function closeLoginModal() {
-            document.getElementById('login-modal').classList.add('hidden');
+        function switchLeagueView(idx) {
+            activeLeagueIndex = idx;
+            renderStandings();
+        }
+
+        // --- 4. ADMIN LOGIC ---
+        function toggleLoginModal() {
+            const modal = document.getElementById('login-modal');
+            if(isAdmin) {
+                document.getElementById('admin-panel').classList.remove('section-hidden');
+                initAdminForms();
+            } else {
+                if(modal.classList.contains('modal-hidden')) {
+                    modal.classList.remove('modal-hidden');
+                    modal.classList.add('modal-visible');
+                } else {
+                    modal.classList.add('modal-hidden');
+                    modal.classList.remove('modal-visible');
+                }
+            }
         }
 
         function handleLogin(e) {
             e.preventDefault();
-            const u = document.getElementById('username').value.trim();
-            const p = document.getElementById('password').value.trim();
-            
+            const u = document.getElementById('username').value;
+            const p = document.getElementById('password').value;
             if(u === 'kooralaghouat' && p === 'kooradz2015') {
                 isAdmin = true;
-                // FIX: Completely hide the modal using 'hidden' class
-                document.getElementById('login-modal').classList.add('hidden');
+                document.getElementById('login-modal').classList.add('modal-hidden');
                 document.getElementById('admin-panel').classList.remove('section-hidden');
-                
-                // Clear fields for security
+                initAdminForms();
                 document.getElementById('username').value = '';
                 document.getElementById('password').value = '';
-                
-                initAdminForms();
             } else {
-                alert('عذراً، معلومات الدخول غير صحيحة.');
+                alert('خطأ في البيانات!');
             }
         }
 
@@ -452,47 +686,46 @@
             isAdmin = false;
         }
 
-        function switchAdminTab(tabName, btn) {
+        function switchAdminTab(tabName) {
             document.querySelectorAll('.admin-tab-content').forEach(el => el.classList.add('hidden'));
             document.getElementById(`tab-${tabName}`).classList.remove('hidden');
-            
-            document.querySelectorAll('.admin-tab-btn').forEach(b => {
-                b.classList.remove('bg-kl-green', 'text-white');
-                b.classList.add('bg-white', 'text-gray-700');
+            document.querySelectorAll('.admin-tab-btn').forEach(btn => {
+                btn.classList.remove('bg-kl-green', 'text-white');
+                btn.classList.add('bg-white', 'text-black');
             });
-            btn.classList.remove('bg-white', 'text-gray-700');
-            btn.classList.add('bg-kl-green', 'text-white');
+            event.target.classList.remove('bg-white', 'text-black');
+            event.target.classList.add('bg-kl-green', 'text-white');
         }
 
         function initAdminForms() {
-            // General
             document.getElementById('edit-site-name-1').value = appData.config.siteName1;
             document.getElementById('edit-site-name-2').value = appData.config.siteName2;
             document.getElementById('edit-site-desc').value = appData.config.desc;
-
-            // Ticker
+            document.getElementById('edit-site-logo').value = appData.config.logo || ""; // Logo
+            document.getElementById('edit-bg-image').value = appData.config.bgImage;
             document.getElementById('edit-ticker-text').value = appData.ticker.join('\n');
-
-            // Render Dynamic Lists
             renderSliderEditor();
             renderNewsEditor();
-            renderTeamsEditor();
+            
+            // Init League Selector
+            const selector = document.getElementById('admin-league-selector');
+            if (appData.leagues.length > 0) {
+                selector.innerHTML = appData.leagues.map((l, idx) => `<option value="${idx}">${l.title}</option>`).join('');
+                renderTeamsEditor(); // Render for first selected
+            } else {
+                selector.innerHTML = '<option value="">لا توجد أقسام</option>';
+                document.getElementById('teams-editor-body').innerHTML = '';
+            }
         }
 
-        // --- ADMIN: Dynamic List Generators ---
         function renderSliderEditor() {
             const container = document.getElementById('slider-editor-container');
-            container.innerHTML = appData.slider.map((slide, i) => `
-                <div class="border border-gray-200 p-4 rounded-xl bg-gray-50 relative group hover:border-kl-green transition">
-                    <button onclick="deleteItem('slider', ${i})" class="absolute top-2 left-2 w-8 h-8 bg-white text-red-500 rounded-full shadow hover:bg-red-500 hover:text-white transition flex items-center justify-center"><i class="fas fa-trash-alt"></i></button>
-                    <div class="grid grid-cols-1 gap-3">
-                        <label class="text-xs font-bold text-gray-500">عنوان الشريحة</label>
-                        <input type="text" value="${slide.title}" onchange="updateItem('slider', ${i}, 'title', this.value)" class="border p-2 rounded outline-none focus:border-kl-green">
-                        <label class="text-xs font-bold text-gray-500">رابط الصورة</label>
-                        <input type="text" value="${slide.img}" onchange="updateItem('slider', ${i}, 'img', this.value)" class="border p-2 rounded outline-none focus:border-kl-green dir-ltr">
-                        <div class="h-20 w-full rounded overflow-hidden mt-2 bg-gray-200">
-                             <img src="${slide.img}" class="w-full h-full object-cover opacity-80">
-                        </div>
+            container.innerHTML = appData.slider.map((slide, index) => `
+                <div class="border p-4 rounded bg-gray-50 relative">
+                    <button onclick="deleteSlide(${index})" class="absolute top-2 left-2 text-red-500 hover:text-red-700 font-bold">X</button>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                        <input type="text" value="${slide.title}" onchange="updateSlideData(${index}, 'title', this.value)" class="border p-2 rounded" placeholder="العنوان">
+                        <input type="text" value="${slide.img}" onchange="updateSlideData(${index}, 'img', this.value)" class="border p-2 rounded" placeholder="رابط الصورة">
                     </div>
                 </div>
             `).join('');
@@ -500,75 +733,111 @@
 
         function renderNewsEditor() {
             const container = document.getElementById('news-editor-container');
-            container.innerHTML = appData.news.map((n, i) => `
-                <div class="border border-gray-200 p-4 rounded-xl bg-gray-50 relative group hover:border-kl-green transition">
-                    <button onclick="deleteItem('news', ${i})" class="absolute top-2 left-2 w-8 h-8 bg-white text-red-500 rounded-full shadow hover:bg-red-500 hover:text-white transition flex items-center justify-center"><i class="fas fa-trash-alt"></i></button>
-                    <div class="space-y-3">
-                        <input type="text" value="${n.title}" onchange="updateItem('news', ${i}, 'title', this.value)" class="border p-2 rounded w-full font-bold focus:border-kl-green outline-none" placeholder="عنوان الخبر">
-                        <div class="grid grid-cols-2 gap-2">
-                            <input type="text" value="${n.cat}" onchange="updateItem('news', ${i}, 'cat', this.value)" class="border p-2 rounded focus:border-kl-green outline-none" placeholder="التصنيف">
-                            <input type="text" value="${n.date}" onchange="updateItem('news', ${i}, 'date', this.value)" class="border p-2 rounded focus:border-kl-green outline-none" placeholder="التاريخ">
-                        </div>
-                        <input type="text" value="${n.img}" onchange="updateItem('news', ${i}, 'img', this.value)" class="border p-2 rounded w-full text-xs text-gray-500 focus:border-kl-green outline-none" placeholder="رابط الصورة">
+            container.innerHTML = appData.news.map((n, index) => `
+                <div class="border p-4 rounded bg-gray-50 relative">
+                    <button onclick="deleteNews(${index})" class="absolute top-2 left-2 text-red-500 hover:text-red-700 font-bold">X</button>
+                    <input type="text" value="${n.title}" onchange="updateNewsData(${index}, 'title', this.value)" class="border p-2 rounded w-full mb-2" placeholder="العنوان">
+                    <div class="grid grid-cols-3 gap-2">
+                        <input type="text" value="${n.cat}" onchange="updateNewsData(${index}, 'cat', this.value)" class="border p-2 rounded" placeholder="التصنيف">
+                        <input type="text" value="${n.date}" onchange="updateNewsData(${index}, 'date', this.value)" class="border p-2 rounded" placeholder="التاريخ">
+                        <input type="text" value="${n.img}" onchange="updateNewsData(${index}, 'img', this.value)" class="border p-2 rounded" placeholder="الصورة">
                     </div>
                 </div>
             `).join('');
         }
 
+        // --- MULTI-LEAGUE TEAMS EDITOR ---
         function renderTeamsEditor() {
+            const leagueIdx = document.getElementById('admin-league-selector').value;
+            if (leagueIdx === "" || !appData.leagues[leagueIdx]) return;
+
+            const league = appData.leagues[leagueIdx];
+            document.getElementById('current-league-name').value = league.title;
+
             const tbody = document.getElementById('teams-editor-body');
-            tbody.innerHTML = appData.teams.map((t, i) => `
-                <tr class="border-b bg-white hover:bg-gray-50">
-                    <td class="p-2 text-gray-500">${i + 1}</td>
-                    <td class="p-2"><input type="text" value="${t.name}" onchange="updateItem('teams', ${i}, 'name', this.value)" class="border p-1 w-full text-center rounded focus:border-kl-green outline-none"></td>
-                    <td class="p-2"><input type="number" value="${t.played}" onchange="updateItem('teams', ${i}, 'played', this.value)" class="border p-1 w-16 text-center rounded focus:border-kl-green outline-none"></td>
-                    <td class="p-2"><input type="number" value="${t.points}" onchange="updateItem('teams', ${i}, 'points', this.value)" class="border p-1 w-16 text-center bg-green-50 font-bold rounded focus:border-kl-green outline-none"></td>
-                    <td class="p-2">
-                        <select onchange="updateItem('teams', ${i}, 'color', this.value)" class="border p-1 rounded text-sm">
-                            <option value="green" ${t.color === 'green' ? 'selected' : ''}>أخضر</option>
-                            <option value="blue" ${t.color === 'blue' ? 'selected' : ''}>أزرق</option>
-                            <option value="red" ${t.color === 'red' ? 'selected' : ''}>أحمر</option>
-                            <option value="yellow" ${t.color === 'yellow' ? 'selected' : ''}>أصفر</option>
-                        </select>
+            tbody.innerHTML = league.teams.map((t, index) => `
+                <tr class="hover:bg-gray-50 border-b">
+                    <td class="p-1 text-gray-500">${index + 1}</td>
+                    <!-- Logo Input -->
+                    <td class="p-1">
+                        <input type="text" value="${t.logo || ''}" onchange="updateTeamData(${leagueIdx}, ${index}, 'logo', this.value)" 
+                        class="border p-1 w-full text-center text-xs rounded bg-gray-50" placeholder="رابط الشعار">
                     </td>
-                    <td class="p-2"><button onclick="deleteItem('teams', ${i})" class="text-red-500 hover:text-red-700 transition"><i class="fas fa-trash"></i></button></td>
+                    <td class="p-1"><input type="text" value="${t.name}" onchange="updateTeamData(${leagueIdx}, ${index}, 'name', this.value)" class="border p-1 w-full text-center text-xs font-bold rounded"></td>
+                    <td class="p-1"><input type="number" value="${t.played}" onchange="updateTeamData(${leagueIdx}, ${index}, 'played', this.value)" class="border p-1 w-10 text-center text-xs rounded"></td>
+                    <td class="p-1"><input type="number" value="${t.won}" onchange="updateTeamData(${leagueIdx}, ${index}, 'won', this.value)" class="border p-1 w-10 text-center text-xs bg-green-50 rounded"></td>
+                    <td class="p-1"><input type="number" value="${t.draw}" onchange="updateTeamData(${leagueIdx}, ${index}, 'draw', this.value)" class="border p-1 w-10 text-center text-xs bg-yellow-50 rounded"></td>
+                    <td class="p-1"><input type="number" value="${t.lost}" onchange="updateTeamData(${leagueIdx}, ${index}, 'lost', this.value)" class="border p-1 w-10 text-center text-xs bg-red-50 rounded"></td>
+                    <td class="p-1"><input type="number" value="${t.gf}" onchange="updateTeamData(${leagueIdx}, ${index}, 'gf', this.value)" class="border p-1 w-10 text-center text-xs rounded"></td>
+                    <td class="p-1"><input type="number" value="${t.ga}" onchange="updateTeamData(${leagueIdx}, ${index}, 'ga', this.value)" class="border p-1 w-10 text-center text-xs rounded"></td>
+                    <td class="p-1"><input type="number" value="${t.diff}" onchange="updateTeamData(${leagueIdx}, ${index}, 'diff', this.value)" class="border p-1 w-10 text-center text-xs rounded"></td>
+                    <td class="p-1"><input type="number" value="${t.points}" onchange="updateTeamData(${leagueIdx}, ${index}, 'points', this.value)" class="border-2 border-green-200 p-1 w-12 text-center font-black text-xs bg-green-100 rounded"></td>
+                    <td class="p-1"><button onclick="deleteTeam(${leagueIdx}, ${index})" class="text-red-500 hover:text-red-700 bg-red-100 p-1 rounded"><i class="fas fa-trash"></i></button></td>
                 </tr>
             `).join('');
         }
 
-        // --- GENERIC UPDATE FUNCTIONS ---
-        function updateItem(arrName, idx, key, val) {
-            appData[arrName][idx][key] = val;
-        }
+        // --- Helpers ---
+        function updateSlideData(idx, key, val) { appData.slider[idx][key] = val; }
+        function addNewSlideInput() { appData.slider.push({title: "جديد", img: ""}); renderSliderEditor(); }
+        function deleteSlide(idx) { appData.slider.splice(idx, 1); renderSliderEditor(); }
 
-        function deleteItem(arrName, idx) {
-            if(confirm('هل أنت متأكد من الحذف؟')) {
-                appData[arrName].splice(idx, 1);
-                if(arrName === 'slider') renderSliderEditor();
-                if(arrName === 'news') renderNewsEditor();
-                if(arrName === 'teams') renderTeamsEditor();
+        function updateNewsData(idx, key, val) { appData.news[idx][key] = val; }
+        function addNewNewsInput() { appData.news.unshift({title: "خبر", cat: "عام", date: "الآن", img: ""}); renderNewsEditor(); }
+        function deleteNews(idx) { appData.news.splice(idx, 1); renderNewsEditor(); }
+
+        // --- League Helpers ---
+        function updateLeagueName(val) {
+            const leagueIdx = document.getElementById('admin-league-selector').value;
+            if (appData.leagues[leagueIdx]) {
+                appData.leagues[leagueIdx].title = val;
+                // Update dropdown text without re-rendering everything
+                document.getElementById('admin-league-selector').options[leagueIdx].text = val;
             }
         }
 
-        function addNewSlideInput() { appData.slider.push({title: "شريحة جديدة", img: "https://placehold.co/1200x500"}); renderSliderEditor(); }
-        function addNewNewsInput() { appData.news.unshift({title: "خبر جديد", cat: "عام", date: "الآن", img: "https://placehold.co/600x400"}); renderNewsEditor(); }
-        function addNewTeamRow() { appData.teams.push({name: "فريق جديد", played: 0, points: 0, color: "green"}); renderTeamsEditor(); }
+        function createNewLeague() {
+            const name = prompt("أدخل اسم القسم الجديد (مثال: القسم الشرفي - فوج أ):");
+            if(name) {
+                appData.leagues.push({
+                    id: Date.now(),
+                    title: name,
+                    teams: []
+                });
+                initAdminForms(); // Refresh selector
+                // Select the new league
+                document.getElementById('admin-league-selector').value = appData.leagues.length - 1;
+                renderTeamsEditor();
+            }
+        }
+
+        function updateTeamData(leagueIdx, teamIdx, key, val) {
+            appData.leagues[leagueIdx].teams[teamIdx][key] = val;
+        }
+
+        function addNewTeamRow() { 
+            const leagueIdx = document.getElementById('admin-league-selector').value;
+            appData.leagues[leagueIdx].teams.push({name: "فريق جديد", logo: "", played: 0, won: 0, draw: 0, lost: 0, gf: 0, ga: 0, diff: 0, points: 0}); 
+            renderTeamsEditor(); 
+        }
+
+        function deleteTeam(leagueIdx, teamIdx) { 
+            appData.leagues[leagueIdx].teams.splice(teamIdx, 1); 
+            renderTeamsEditor(); 
+        }
 
         function saveChanges() {
             appData.config.siteName1 = document.getElementById('edit-site-name-1').value;
             appData.config.siteName2 = document.getElementById('edit-site-name-2').value;
             appData.config.desc = document.getElementById('edit-site-desc').value;
-            
-            const rawTicker = document.getElementById('edit-ticker-text').value;
-            appData.ticker = rawTicker.split('\n').filter(line => line.trim() !== "");
-
-            localStorage.setItem('koora_laghouat_data', JSON.stringify(appData));
-            alert('تم حفظ الإعدادات بنجاح!');
-            renderAll();
+            appData.config.logo = document.getElementById('edit-site-logo').value; // Save Logo
+            appData.config.bgImage = document.getElementById('edit-bg-image').value;
+            appData.ticker = document.getElementById('edit-ticker-text').value.split('\n').filter(line => line.trim() !== "");
+            saveData();
+            alert('تم حفظ التغييرات بنجاح!');
             closeAdminPanel();
         }
 
-        // --- NAVIGATION & INIT ---
         function showSection(sectionId) {
             document.querySelectorAll('.section-block').forEach(sec => sec.classList.add('section-hidden'));
             const target = document.getElementById(sectionId);
@@ -578,11 +847,9 @@
                 void target.offsetWidth; 
                 target.classList.add('animate-fade-in');
             }
-            
             document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active-link'));
             const activeLink = document.getElementById('nav-' + sectionId);
             if(activeLink) activeLink.classList.add('active-link');
-            
             document.getElementById('mobile-menu').classList.add('hidden');
             window.scrollTo({top: 0, behavior: 'smooth'});
         }
@@ -594,6 +861,7 @@
         window.onload = function() {
             renderAll();
         };
+
     </script>
 </body>
 </html>
