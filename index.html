@@ -29,7 +29,7 @@
                         sans: ['Cairo', 'sans-serif'],
                     },
                     animation: {
-                        'ticker': 'ticker 30s linear infinite', 
+                        'ticker': 'ticker 60s linear infinite', // تم تعديل السرعة إلى 60 ثانية (أبطأ)
                         'fade-in': 'fadeIn 0.5s ease-out forwards',
                     },
                     keyframes: {
@@ -248,7 +248,7 @@
             <span class="animate-pulse bg-red-600 px-2 rounded text-xs ml-2">شريط الأخبار</span>
         </div>
         <div class="overflow-hidden w-full h-6 relative">
-            <div class="absolute top-0 right-0 whitespace-nowrap animate-[ticker_30s_linear_infinite]" id="news-ticker-content" style="text-align: right;"></div>
+            <div class="absolute top-0 right-0 whitespace-nowrap animate-[ticker_60s_linear_infinite]" id="news-ticker-content" style="text-align: right;"></div>
         </div>
     </div>
 
@@ -383,10 +383,10 @@
                 "🏆 تتويج أصاغر الشباب بالبطولة الولائية"
             ],
             slider: [
-                { img: "https://images.unsplash.com/photo-1517466787929-bc90951d0974?q=80&w=1200", title: "تأهل الأكاديمية الرياضية للأغواط للدور 16" },
-                { img: "https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a?q=80&w=1200", title: "عملية جراحية ناجحة للاعب صهيب نجام" },
-                { img: "https://images.unsplash.com/photo-1504711434969-e33886168f5c?q=80&w=1200", title: "تعزية: الصحفي عبد الحفيظ شايب في ذمة الله" },
-                { img: "https://images.unsplash.com/photo-1595152772835-219674b2a8a6?q=80&w=1200", title: "تعزية: وفاة المناصر عبد المؤمن محمد" }
+                { img: "https://images.unsplash.com/photo-1517466787929-bc90951d0974?q=80&w=1200", title: "تأهل الأكاديمية الرياضية للأغواط ومدرسة الوفاء و اكاديمية افلو للدور الـ 16 من كأس الجمهورية" },
+                { img: "https://images.unsplash.com/photo-1504711434969-e33886168f5c?q=80&w=1200", title: "تعزية: الأسرة الرياضية تودع الصحفي القدير عبد الحفيظ شايب" },
+                { img: "https://images.unsplash.com/photo-1595152772835-219674b2a8a6?q=80&w=1200", title: "وفاة المناصر الوفي لاتحاد الأغواط عبد المؤمن محمد - إنا لله وإنا إليه راجعون" },
+                { img: "https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a?q=80&w=1200", title: "أجرى مهاجم نادي فتح بن ناصر بن شهرة الناشط في القسم الشرفي صهيب نجام عملية جراحية ناجحة على مستوى الرباط الخارجي للركبة" }
             ],
             news: [
                 { title: "تصريحات نارية للمدرب", cat: "أكابر", date: "14 ديسمبر", img: "https://images.unsplash.com/photo-1517466787929-bc90951d0974?q=80&w=600" },
