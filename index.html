@@ -691,6 +691,43 @@
             renderStandings();
         }
 
+        // --- Navigation ---
+        function showSection(sectionId, updateHistory = true) {
+            // Update URL using history API
+            if(updateHistory) {
+                history.pushState({section: sectionId}, "", "#" + sectionId);
+            }
+
+            document.querySelectorAll('.section-block').forEach(sec => sec.classList.add('section-hidden'));
+            const target = document.getElementById(sectionId);
+            if(target) {
+                target.classList.remove('section-hidden');
+                target.classList.remove('animate-fade-in');
+                void target.offsetWidth; 
+                target.classList.add('animate-fade-in');
+            }
+            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active-link'));
+            const activeLink = document.getElementById('nav-' + sectionId);
+            if(activeLink) activeLink.classList.add('active-link');
+            document.getElementById('mobile-menu').classList.add('hidden');
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        }
+
+        // Handle Browser Back/Forward Buttons
+        window.addEventListener('popstate', (event) => {
+            if (event.state && event.state.section) {
+                showSection(event.state.section, false);
+            } else {
+                // Check hash on load or empty state
+                const hash = window.location.hash.substring(1);
+                if(hash) {
+                    showSection(hash, false);
+                } else {
+                    showSection('home', false);
+                }
+            }
+        });
+
         // --- 4. ADMIN LOGIC ---
         function toggleLoginModal() {
             const modal = document.getElementById('login-modal');
@@ -899,30 +936,20 @@
             closeAdminPanel();
         }
 
-        function showSection(sectionId) {
-            document.querySelectorAll('.section-block').forEach(sec => sec.classList.add('section-hidden'));
-            const target = document.getElementById(sectionId);
-            if(target) {
-                target.classList.remove('section-hidden');
-                target.classList.remove('animate-fade-in');
-                void target.offsetWidth; 
-                target.classList.add('animate-fade-in');
-            }
-            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active-link'));
-            const activeLink = document.getElementById('nav-' + sectionId);
-            if(activeLink) activeLink.classList.add('active-link');
-            document.getElementById('mobile-menu').classList.add('hidden');
-            window.scrollTo({top: 0, behavior: 'smooth'});
-        }
-
         document.getElementById('mobile-menu-btn').addEventListener('click', () => {
             document.getElementById('mobile-menu').classList.toggle('hidden');
         });
 
+        // Init with Hash Check
         window.onload = function() {
             renderAll();
+            // Check if there is a hash on load and navigate to it
+            const hash = window.location.hash.substring(1);
+            if(hash) {
+                showSection(hash, false); // false to avoid double push on load
+            }
         };
 
     </script>
 </body>
-    </html>
+</html>
